@@ -8,13 +8,16 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
 import re
 import sqlite3
 import sys
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs
+from urllib.request import Request, urlopen
 from wsgiref.simple_server import make_server
 
 ROOT = Path(__file__).resolve().parent
@@ -22,6 +25,20 @@ CSV_PATH = ROOT / "moroccan_medications.csv"
 DB_PATH = ROOT / "pharmacy.db"
 STATIC = ROOT / "static"
 FIELDS = ("id", "specialite", "substance_active", "dosage", "forme", "presentation", "epi", "statut", "ppv", "ph")
+CHAT_MODEL = os.getenv("OPENAI_MODEL", "gpt-6-astra")
+CHAT_INSTRUCTIONS = """You are Pharma Darija, a careful Moroccan pharmacy information assistant.
+Speak naturally in the user's language (Darija, Arabic, French, or English). You are not a doctor.
+For every claim about a medicine in the local catalog, call a catalog tool first and cite the medicine name and ID in the answer.
+Never invent a medicine's composition, price, status, availability, dose, interaction, contraindication, diagnosis, or treatment plan.
+Do not give personalized dosing or tell a user to start, stop, or change a medicine. For symptoms, pregnancy, child dosing,
+interactions, or treatment decisions, recommend a pharmacist or clinician. For emergency symptoms, direct the user to urgent care.
+Be concise, transparent when data is missing, and distinguish catalog data from medical guidance."""
+CHAT_TOOLS = [
+    {"type": "function", "name": "search_catalog", "description": "Search the local Moroccan medicine catalog by brand, active substance, dosage, form, or marketing status.", "strict": True,
+     "parameters": {"type": "object", "properties": {"query": {"type": "string", "description": "Relevant medicine name, active substance, or dosage terms."}, "form": {"type": "string", "description": "Optional pharmaceutical form filter."}, "status": {"type": "string", "description": "Optional marketing status filter."}, "limit": {"type": "integer", "description": "Number of matches, from 1 to 10."}}, "required": ["query", "form", "status", "limit"], "additionalProperties": False}},
+    {"type": "function", "name": "get_medication", "description": "Get one catalog record by its exact medicine ID after it was found with search_catalog.", "strict": True,
+     "parameters": {"type": "object", "properties": {"id": {"type": "string", "description": "Exact medicine ID from a catalog result."}}, "required": ["id"], "additionalProperties": False}},
+]
 
 
 def price_number(value: str | None) -> float | None:
@@ -138,34 +155,66 @@ def best_matches(text: str, limit: int = 3) -> list[dict]:
     return []
 
 
-def chat_reply(message: str) -> dict:
-    normalized = message.casefold()
-    urgent = ("urgence", "emergency", "allerg", "respir", "chest pain", "douleur poitrine", "suicide")
-    if any(term in normalized for term in urgent):
-        return {"answer": "Ila kayn dy9 nfass, wja3 f s-sder, 7assassiya qwiya, wla chi 7ala mosta3jala: 3ayet l الإسعاف / sir l-mosta3jal daba. Ma n9drch n3awwad l-isti3jal b chat.", "matches": []}
-    matches = best_matches(message)
-    if matches:
-        lines = []
-        for med in matches:
-            facts = [med["specialite"]]
-            if med["substance_active"]:
-                facts.append(f"substance active: {med['substance_active']}")
-            if med["dosage"]:
-                facts.append(med["dosage"])
-            if med["ppv"]:
-                facts.append(f"PPV: {med['ppv']}")
-            if med["statut"]:
-                facts.append(med["statut"])
-            lines.append(" — ".join(facts))
-        return {
-            "answer": "L9it had l-ma3lomat f catalogue AMMPS:\n" + "\n".join(lines) +
-                      "\n\nHadchi maشي wasfa wla tashkhis. T2akked m3a saydali/tabib 9bl ma tbda, tbdel, wla t7بس ay dawa.",
-            "matches": matches,
-        }
-    return {
-        "answer": "N9dr n9elleb lik f catalogue b smit dawa wla substance active (b7al: `Doliprane`, `paracetamol`, `Augmentin`). Ma n9drch n3ti tashkhis, dose personnelle, wla ta2kid dyal interaction; hadchi khasso saydali wla tabib.",
-        "matches": [],
-    }
+def catalog_tool(name: str, arguments: dict) -> dict:
+    """The only data tools that the model can call; neither accepts raw SQL."""
+    if name == "search_catalog":
+        limit = max(1, min(10, int(arguments.get("limit", 5))))
+        items, total, _, _ = search({
+            "q": [str(arguments.get("query", ""))], "form": [str(arguments.get("form", ""))],
+            "status": [str(arguments.get("status", ""))], "page": ["1"], "per_page": [str(limit)],
+        })
+        return {"total": total, "items": items}
+    if name == "get_medication":
+        with connection() as conn:
+            row = conn.execute("SELECT * FROM medications WHERE id = ?", (str(arguments.get("id", "")),)).fetchone()
+        return {"item": serialize(row) if row else None}
+    return {"error": "Unknown tool"}
+
+
+def openai_response(payload: dict) -> dict:
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("CHAT_NOT_CONFIGURED")
+    request = Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(payload).encode(),
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=45) as reply:
+            return json.loads(reply.read())
+    except HTTPError as error:
+        # Keep provider internals and credentials out of the browser response.
+        raise RuntimeError(f"OPENAI_HTTP_{error.code}") from error
+    except URLError as error:
+        raise RuntimeError("OPENAI_UNAVAILABLE") from error
+
+
+def agent_reply(history: list[dict]) -> dict:
+    """Run the Responses API tool loop, preserving only the current chat's short history."""
+    input_items = [{"role": item["role"], "content": item["content"]} for item in history[-12:]]
+    payload = {"model": CHAT_MODEL, "instructions": CHAT_INSTRUCTIONS, "input": input_items, "tools": CHAT_TOOLS, "store": False}
+    tool_trace = []
+    for _ in range(4):
+        result = openai_response(payload)
+        calls = [item for item in result.get("output", []) if item.get("type") == "function_call"]
+        if not calls:
+            answer = result.get("output_text", "").strip()
+            if not answer:
+                answer = "I couldn't produce a response. Please try again."
+            return {"answer": answer, "tools_used": tool_trace}
+        input_items.extend(result.get("output", []))
+        for call in calls:
+            try:
+                arguments = json.loads(call.get("arguments", "{}"))
+                tool_result = catalog_tool(call.get("name", ""), arguments)
+            except (ValueError, TypeError, json.JSONDecodeError):
+                tool_result = {"error": "Invalid tool arguments"}
+            tool_trace.append(call.get("name", "catalog"))
+            input_items.append({"type": "function_call_output", "call_id": call["call_id"], "output": json.dumps(tool_result, ensure_ascii=False)})
+        payload["input"] = input_items
+    return {"answer": "I reached the tool-call limit for this request. Please try a more specific question.", "tools_used": tool_trace}
 
 
 def response(start, status: str, body: bytes, content_type: str, headers=()):
@@ -185,7 +234,7 @@ def app(environ, start_response):
         if path == "/api/health" and method == "GET":
             with connection() as conn:
                 count = conn.execute("SELECT COUNT(*) FROM medications").fetchone()[0]
-            return json_response(start_response, {"ok": True, "records": count, "updated": datetime.fromtimestamp(CSV_PATH.stat().st_mtime, timezone.utc).isoformat()})
+            return json_response(start_response, {"ok": True, "records": count, "chat_configured": bool(os.getenv("OPENAI_API_KEY")), "updated": datetime.fromtimestamp(CSV_PATH.stat().st_mtime, timezone.utc).isoformat()})
         if path == "/api/medications" and method == "GET":
             items, total, page, per_page = search(params)
             return json_response(start_response, {"items": items, "total": total, "page": page, "per_page": per_page})
@@ -208,7 +257,23 @@ def app(environ, start_response):
             message = str(payload.get("message", "")).strip()
             if not message:
                 return json_response(start_response, {"error": "Message is required"}, "400 Bad Request")
-            return json_response(start_response, chat_reply(message))
+            raw_history = payload.get("messages", [])
+            history = []
+            if isinstance(raw_history, list):
+                for item in raw_history[-11:]:
+                    if not isinstance(item, dict) or item.get("role") not in ("user", "assistant"):
+                        continue
+                    content = str(item.get("content", "")).strip()
+                    if content:
+                        history.append({"role": item["role"], "content": content[:4000]})
+            history.append({"role": "user", "content": message[:4000]})
+            try:
+                return json_response(start_response, agent_reply(history))
+            except RuntimeError as error:
+                if str(error) == "CHAT_NOT_CONFIGURED":
+                    return json_response(start_response, {"error": "Chat is not configured. Set OPENAI_API_KEY on the server and restart it."}, "503 Service Unavailable")
+                print(f"Chat provider error: {error}", file=sys.stderr)
+                return json_response(start_response, {"error": "The chat provider is unavailable. Please try again shortly."}, "503 Service Unavailable")
         if path == "/" or path == "/index.html":
             return response(start_response, "200 OK", (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
         if path in ("/app.js", "/styles.css"):
