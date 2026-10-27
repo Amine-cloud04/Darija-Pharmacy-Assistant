@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Amine-cloud04/Darija-Pharmacy-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/Amine-cloud04/Darija-Pharmacy-Assistant/actions/workflows/ci.yml)
 
-DawaLink is a local-first Moroccan medicine catalogue and pharmacy enquiry assistant. A user can describe a stock or price question in Moroccan Darija, Arabic or French; the local Qwen model extracts the request and medicine details, the app checks them against the included catalogue, the user confirms the exact product, and the app prepares a message they can copy to their pharmacy. A medicine-box photo can also be read with local Tesseract OCR.
+DawaLink is a local-first Moroccan medicine catalogue and pharmacy enquiry assistant. A user can describe a stock or price question in Moroccan Darija, Arabic or French; the local Qwen model extracts the request and medicine details, the app checks them against the included catalogue, the user confirms the exact product, and the app prepares a message. With the user's consent, it can find nearby pharmacies from OpenStreetMap and open a prefilled WhatsApp, SMS or email message when public contact details are available. A medicine-box photo can also be read with local Tesseract OCR.
 
-It does not diagnose, prescribe, assess interactions, verify stock, contact pharmacies, or send messages. Catalogue registration, price and status are not evidence of current availability. Ask a pharmacist or clinician about medical decisions.
+It does not diagnose, prescribe, assess interactions, verify stock, or contact pharmacies directly. The user reviews and sends messages in their own messaging app. OpenStreetMap coverage and pharmacy contact details can be incomplete. Catalogue registration, price and status are not evidence of current availability. Ask a pharmacist or clinician about medical decisions.
 
 ## What runs locally
 
@@ -15,6 +15,7 @@ The intended customer journey and pharmacy information needs are described in [U
 - Multi-turn conversational understanding through Qwen3 1.7B running locally with Ollama. The model extracts intent and user-stated details into a constrained JSON schema. It does not invent catalogue records: candidate product IDs and displayed prices come from SQLite. A small local safety guard routes clear personal treatment questions to a pharmacist.
 - Optional JPEG, PNG and WebP OCR through the local Tesseract executable. English, French and Arabic language data are used when installed. OCR scores are matching scores, not probabilities.
 - Candidate confirmation and editable French, Darija Latin or Darija Arabic pharmacy enquiry text.
+- Opt-in nearest-pharmacy lookup using OpenStreetMap, with map directions and prefilled contact links where mapped contact data exists.
 - No hosted API, API key or per-request fee. User questions are sent only to the local Ollama service on loopback; no cloud fallback is configured. The model weights require a one-time download (~1.4 GB). Catalogue browsing and image OCR can still be used if Ollama is stopped.
 
 No speech recognition is implemented. Browser voice recognition can depend on remote browser services and is outside this local workflow.
@@ -82,21 +83,22 @@ The same functions power the web interface and API. All endpoints bind to localh
 - `POST /api/interpret` deterministic compatibility endpoint: `{"text":"3afak wach kayn Doliprane 1000 mg?"}`
 - `POST /api/recognize` multipart form field `image` (JPEG, PNG or WebP)
 - `POST /api/pharmacy-request` JSON, e.g. `{"catalog_id":"563","requested_quantity":"1 boîte","location":"Rabat","language":"fr","question_type":"both"}`
+- `POST /api/pharmacies/nearby` JSON with user-approved `latitude`, `longitude`, `radius_m`, and optional prefilled `message`; queries OpenStreetMap Overpass and returns nearest mapped pharmacies plus available contact links.
 - `GET /api/export?q=Doliprane`
 
 Interactive OpenAPI documentation is not provided; the API uses the existing dependency-free WSGI server. Invalid input receives JSON errors. The complete web UI is at `/`.
 
 ## Architecture
 
-`app.py` handles HTTP and validation. `assistant_service.py` connects the conversational UI to Ollama over loopback, constrains model output to a JSON schema, grounds extracted details in the conversation, and retrieves products from the catalogue. `dawaling_core.py` implements CSV import, SQLite/FTS5, search, OCR invocation, strength/form matching and enquiry generation. `static/` contains the chat and confirmation workflow. `scripts/ingest_data.py` produces `data/processed/data_quality_report.json`; `scripts/evaluate.py` regenerates the rule-based baseline evaluation artifacts.
+`app.py` handles HTTP and validation. `assistant_service.py` connects the conversational UI to Ollama over loopback, constrains model output to a JSON schema, grounds extracted details in the conversation, and retrieves products from the catalogue. `dawaling_core.py` implements CSV import, SQLite/FTS5, search, OCR invocation, strength/form matching and enquiry generation. `pharmacy_directory.py` queries OpenStreetMap Overpass for nearby mapped pharmacies. `static/` contains the chat and confirmation workflow. `scripts/ingest_data.py` produces `data/processed/data_quality_report.json`; `scripts/evaluate.py` regenerates the rule-based baseline evaluation artifacts.
 
 ## Known limits
 
 - No labelled Moroccan catalogue photos are included. One foreign-market image was evaluated as a failure spot check, but it cannot estimate OCR or catalogue-match performance for Moroccan products. OCR operation itself needs local Tesseract and language packs.
 - The 1.7B model is compact and can misunderstand dialect or entity details. The UI asks the user to confirm an exact catalogue item; details such as strength and quantity are checked against what was written. The model is not a medical adviser.
-- The generated message is reviewed and sent by the user. Pharmacy stock, local directories, delivery and live prices are not connected. Catalogue PPV values may be stale.
+- The generated message is reviewed and sent by the user. Pharmacy stock, opening hours, delivery and live prices are not connected. OpenStreetMap coverage/contact details may be incomplete. Catalogue PPV values may be stale.
 - The legacy AMMPS export has no retained source date and missing fields. The source web page has since reported a newer total.
-- No pharmacy inventory, pharmacy directory, messaging integration, speech recognition, or clinical decision support exists.
+- No pharmacy inventory, direct pharmacy messaging integration, speech recognition, or clinical decision support exists. Nearby listings rely on OpenStreetMap coverage and are not endorsements.
 - Uploaded image processing and assistant prompts stay on the device by default. No remote AI endpoint or fallback is configured.
 
 ## Deliverables

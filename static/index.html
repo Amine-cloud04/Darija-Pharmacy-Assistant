@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#17322c">
   <title>DawaLink — votre question à la pharmacie</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/nearby.css">
 </head>
 <body>
   <header class="topbar">
@@ -17,7 +18,7 @@
     <section class="hero">
       <div><p class="eyebrow">Votre assistant de demande en pharmacie</p><h1>Un médicament en tête.<br><em>Une question à poser.</em></h1>
         <p>Expliquez ce que vous cherchez en darija, en arabe ou en français. On vous aide à identifier la bonne fiche et à préparer une question claire pour votre pharmacie.</p></div>
-      <aside class="hero-note"><span class="note-mark">✳</span><div><strong>Vous gardez la main</strong><p>DawaLink ne vérifie pas les stocks et n’envoie aucun message. Vous relisez et décidez.</p></div></aside>
+      <aside class="hero-note"><span class="note-mark">✳</span><div><strong>Vous gardez la main</strong><p>Choisissez une pharmacie proche, relisez votre message et envoyez-le depuis votre application.</p></div></aside>
     </section>
 
     <section class="workspace" aria-label="Préparer une demande en pharmacie">
@@ -51,7 +52,9 @@
           <label for="message-language">Langue de la question</label><select id="message-language"><option value="fr">Français</option><option value="darija_latn">Darija (latin)</option><option value="darija_ar">الدارجة (العربية)</option></select>
           <button id="prepare-message" type="submit" disabled>Préparer ma question <span aria-hidden="true">→</span></button>
         </form>
-        <div id="message-result" class="message-result hidden"><div class="message-result-head"><strong>À envoyer vous-même</strong><span>Message prêt</span></div><textarea id="generated-message" rows="4" aria-label="Question à envoyer à la pharmacie"></textarea><div class="message-actions"><button id="copy-message" type="button" class="copy-button">Copier le message</button><button id="edit-request" type="button" class="text-button">Modifier ma demande</button></div><p class="no-send">DawaLink ne contacte pas la pharmacie et ne connaît pas son stock actuel.</p></div>
+        <div id="message-result" class="message-result hidden"><div class="message-result-head"><strong>Votre message</strong><span>Relisez avant l’envoi</span></div><textarea id="generated-message" rows="4" aria-label="Question à envoyer à la pharmacie"></textarea><div class="message-actions"><button id="copy-message" type="button" class="copy-button">Copier le message</button><button id="edit-request" type="button" class="text-button">Modifier ma demande</button></div><p class="no-send">Le stock n’est pas vérifié. Choisissez une pharmacie pour ouvrir votre application de messagerie et envoyez le message après l’avoir relu.</p>
+          <section class="nearby-panel" aria-labelledby="nearby-title"><div><h3 id="nearby-title">Trouver une pharmacie proche</h3><p>Votre position sert uniquement à chercher autour de vous sur OpenStreetMap; DawaLink ne l’enregistre pas. Données © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.</p></div><div class="nearby-controls"><label class="sr-only" for="nearby-radius">Rayon de recherche</label><select id="nearby-radius"><option value="2000">2 km</option><option value="5000" selected>5 km</option><option value="10000">10 km</option><option value="15000">15 km</option><option value="50000">50 km</option></select><button id="find-nearby" type="button">Utiliser ma position</button></div><div id="nearby-status" class="nearby-status" role="status"></div><div id="nearby-results" class="nearby-results"></div></section>
+        </div>
       </aside>
     </section>
 

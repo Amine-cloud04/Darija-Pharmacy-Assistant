@@ -15,6 +15,7 @@ from socketserver import ThreadingMixIn
 
 import dawaling_core as core
 import assistant_service
+import pharmacy_directory
 
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
@@ -123,6 +124,8 @@ def app(environ, start_response):
             return json_response(start_response, core.recognize_image(data, filename))
         if path == "/api/pharmacy-request" and method == "POST":
             return json_response(start_response, core.pharmacy_request(body_json(environ)))
+        if path == "/api/pharmacies/nearby" and method == "POST":
+            return json_response(start_response, pharmacy_directory.nearby_pharmacies(body_json(environ, max_size=5000)))
         if path == "/api/chat" and method == "POST":
             payload = body_json(environ)
             text = str(payload.get("message", "")).strip()
@@ -151,6 +154,8 @@ def app(environ, start_response):
         if path in ("/app.js", "/styles.css") and method == "GET":
             kind = "application/javascript" if path.endswith(".js") else "text/css"
             return response(start_response, "200 OK", (STATIC / path[1:]).read_bytes(), kind + "; charset=utf-8", (("Cache-Control", "no-cache"),))
+        if path == "/nearby.css" and method == "GET":
+            return response(start_response, "200 OK", (STATIC / "nearby.css").read_bytes(), "text/css; charset=utf-8", (("Cache-Control", "no-cache"),))
         return json_response(start_response, {"error": "Not found."}, "404 Not Found")
     except OverflowError as error:
         return json_response(start_response, {"error": str(error)}, "413 Payload Too Large")
