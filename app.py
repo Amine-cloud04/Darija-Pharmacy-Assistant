@@ -13,12 +13,21 @@ from urllib.parse import parse_qs
 from wsgiref.simple_server import make_server, WSGIServer
 from socketserver import ThreadingMixIn
 
+# Vercel's deployment filesystem is read-only except for /tmp. Set these before
+# importing the catalogue module so SQLite uses writable instance storage.
+if os.environ.get("VERCEL"):
+    os.environ.setdefault("DAWALINK_DB_PATH", "/tmp/dawalink-pharmacy.db")
+    os.environ.setdefault("DAWALINK_DEPLOYMENT", "vercel")
+
 import dawaling_core as core
 import assistant_service
 import pharmacy_directory
 
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
+
+if os.environ.get("VERCEL"):
+    core.ensure_database(db_path=core.DB_PATH)
 
 
 class ThreadedWSGIServer(ThreadingMixIn, WSGIServer):
@@ -74,7 +83,7 @@ def app(environ, start_response):
         if path == "/api/health" and method == "GET":
             with core.connect() as conn:
                 count = conn.execute("SELECT COUNT(*) FROM medications").fetchone()[0]
-            return json_response(start_response, {"ok": True, "product": "DawaLink", "records": count, "ocr_available": core.tesseract_engine() is not None, "catalogue_export_date": None, "source_file_modified_at": datetime.fromtimestamp(core.CSV_PATH.stat().st_mtime, timezone.utc).isoformat()})
+            return json_response(start_response, {"ok": True, "product": "DawaLink", "records": count, "ocr_available": core.tesseract_engine() is not None, "deployment": os.environ.get("DAWALINK_DEPLOYMENT", "local"), "catalogue_export_date": None, "source_file_modified_at": datetime.fromtimestamp(core.CSV_PATH.stat().st_mtime, timezone.utc).isoformat()})
         if path == "/api/assistant/status" and method == "GET":
             return json_response(start_response, assistant_service.status())
         if path == "/api/medications" and method == "GET":

@@ -62,7 +62,7 @@ The app runs without Tesseract and reports that OCR is unavailable. No model wei
 
 ## Tests and evaluation
 
-GitHub Actions runs the unit suite and local evaluation on pushes and pull requests to `main`, then builds the PDF report and presentation. The built files are attached to each successful workflow run as downloadable artifacts. This repository has no hosted deployment target; the application remains a local-first service.
+GitHub Actions runs the unit suite and local evaluation on pushes and pull requests to `main`, then builds the PDF report and presentation. The built files are attached to each successful workflow run as downloadable artifacts. The app can also be deployed to Vercel using the included Python adapter. Hosted deployments rebuild their SQLite index in ephemeral `/tmp` storage from the bundled CSV; catalogue browsing and nearby-pharmacy lookup are available online. Qwen inference through local Ollama and Tesseract OCR require the local installation; the hosted chat uses a clearly labeled deterministic catalogue-search fallback.
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -73,7 +73,7 @@ python3 scripts/evaluate.py
 
 ## API
 
-The same functions power the web interface and API. All endpoints bind to localhost only.
+The same functions power the web interface and API. The local development server binds to localhost; the Vercel deployment is public unless Vercel access protection is enabled.
 
 - `GET /api/health`
 - `GET /api/medications?q=Doliprane&page=1&per_page=20`
@@ -99,7 +99,13 @@ Interactive OpenAPI documentation is not provided; the API uses the existing dep
 - The generated message is reviewed and sent by the user. Pharmacy stock, opening hours, delivery and live prices are not connected. OpenStreetMap coverage/contact details may be incomplete. Catalogue PPV values may be stale.
 - The legacy AMMPS export has no retained source date and missing fields. The source web page has since reported a newer total.
 - No pharmacy inventory, direct pharmacy messaging integration, speech recognition, or clinical decision support exists. Nearby listings rely on OpenStreetMap coverage and are not endorsements.
-- Uploaded image processing and assistant prompts stay on the device by default. No remote AI endpoint or fallback is configured.
+- In local mode, prompts and image processing stay on the device and there is no remote AI endpoint. The Vercel version is hosted: text requests go to its server for deterministic catalogue parsing, and image uploads reach the hosted server but cannot be OCR-processed there.
+
+## Deploy to Vercel
+
+The Vercel configuration and Python function adapter are included. To create the production project, sign in to Vercel and [import this GitHub repository](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAmine-cloud04%2FDarija-Pharmacy-Assistant). Choose `main` as the production branch. Once connected, Vercel will deploy future pushes automatically.
+
+The deployment uses ephemeral `/tmp` storage for its generated SQLite index and rebuilds it from the bundled CSV on cold starts. Catalogue search and pharmacy lookup work online. Qwen/Ollama and Tesseract remain local-only; the hosted chat uses a deterministic catalogue fallback. The Vercel deployment is public unless access protection is enabled.
 
 ## Deliverables
 

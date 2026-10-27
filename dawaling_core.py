@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "moroccan_medications.csv"
-DB_PATH = ROOT / "pharmacy.db"
+DB_PATH = Path(os.environ.get("DAWALINK_DB_PATH", ROOT / "pharmacy.db"))
 FIELDS = ("id", "specialite", "substance_active", "dosage", "forme", "presentation", "epi", "statut", "ppv", "ph")
 DATA_SOURCE = "repository:moroccan_medications.csv (AMMPS web export; original import date not recorded)"
 

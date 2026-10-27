@@ -70,14 +70,27 @@ async function sendMessage(text){
   text=(text||'').trim();if(!text)return;
   clearSelection();
   conversation.push({role:'user',content:text});addBubble('user',text);const quick=$('#quick-start');if(quick)quick.classList.add('hidden');setBusy(true);
-  const pending=addBubble('assistant','Je regarde ce que vous voulez faire…','Modèle local');pending.classList.add('thinking');
+  const pending=addBubble('assistant','Je regarde ce que vous voulez faire…',window.dawalinkDeployment==='vercel'?'Recherche du catalogue':'Modèle local');pending.classList.add('thinking');
   try{
-    const data=await api('/api/assistant/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation})});
-    pending.remove();setNeed(data.slots);
+    let data, fallback=window.dawalinkDeployment==='vercel';
+    if(fallback)data=await api('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
+    else try{data=await api('/api/assistant/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation})});}
+    catch(error){
+      const health=await api('/api/health');
+      if(health.deployment!=='vercel')throw error;
+      window.dawalinkDeployment='vercel';fallback=true;
+      data=await api('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
+    }
+    pending.remove();if(!fallback)setNeed(data.slots);
+    if(fallback){
+      const host=addBubble('assistant',data.answer,'Version en ligne · interprétation déterministe et catalogue local; Qwen/Ollama est disponible seulement dans la version locale.');
+      if(data.candidates?.length)showCandidates(data.candidates,host);
+      return;
+    }
     const host=addBubble('assistant',data.reply,`Compris avec ${data.model} · résultats du catalogue local`);
     if(data.candidates?.length)showCandidates(data.candidates,host);
     if(data.next_step==='clinical_safety')host.classList.add('safety-bubble');
-  }catch(error){pending.remove();addBubble('assistant',error.message,'Aucun service cloud n’a été appelé');}
+  }catch(error){pending.remove();addBubble('assistant',error.message,'Le service de chat n’a pas répondu.');}
   finally{setBusy(false);$('#chat-input').focus();}
 }
 $('#chat-form').addEventListener('submit',event=>{event.preventDefault();const input=$('#chat-input');const text=input.value;input.value='';input.style.height='auto';sendMessage(text)});
@@ -86,12 +99,14 @@ $('#chat-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!eve
 
 async function checkModel(){
   try{
-    const status=await api('/api/assistant/status');const badge=$('#model-status');
+    const [status,health]=await Promise.all([api('/api/assistant/status'),api('/api/health')]);const badge=$('#model-status');window.dawalinkDeployment=health.deployment;
     if(status.available&&status.model_ready){badge.innerHTML='<i></i> Qwen local prêt';badge.className='model-status ready';$('#llm-setup').classList.add('hidden');}
     else{
-      badge.innerHTML='<i></i> Modèle à configurer';badge.className='model-status offline';
-      const message=!status.available?'Démarrez Ollama puis relancez l’application.':`Installez le modèle local avec : ollama pull ${status.model}`;
-      $('#llm-setup').innerHTML=`<strong>Le modèle de conversation n’est pas prêt.</strong><span>${esc(message)} Les photos et la recherche directe dans le catalogue restent disponibles.</span>`;$('#llm-setup').classList.remove('hidden');
+      const hosted=health.deployment==='vercel';
+      badge.innerHTML=hosted?'<i></i> Catalogue en ligne':'<i></i> Modèle à configurer';badge.className=hosted?'model-status ready':'model-status offline';
+      const message=hosted?'Sur la version Vercel, le catalogue et la recherche de pharmacies fonctionnent. Le chat répond avec des règles de recherche; le modèle Qwen local et la reconnaissance Tesseract restent disponibles dans l’installation locale.':!status.available?'Démarrez Ollama puis relancez l’application.':`Installez le modèle local avec : ollama pull ${status.model}`;
+      $('#llm-setup').innerHTML=`<strong>${hosted?'Version hébergée':'Le modèle de conversation n’est pas prêt.'}</strong><span>${esc(message)}</span>`;$('#llm-setup').classList.remove('hidden');
+      if(hosted){$('.local-pill').innerHTML='<i></i> Catalogue hébergé';$('.model-footnote').textContent='Version Vercel : les recherches sont traitées par le serveur hébergé. Le Qwen local et Tesseract sont disponibles dans la version installée sur votre ordinateur.';}
     }
   }catch{ $('#model-status').textContent='Modèle local indisponible'; }
 }
@@ -102,7 +117,7 @@ $('#medicine-image').addEventListener('change',async event=>{
   const pending=addBubble('assistant','Je lis le texte visible sur la boîte…','OCR local');const fd=new FormData();fd.append('image',file);
   try{
     const data=await api('/api/recognize',{method:'POST',body:fd});pending.remove();
-    const reply=data.ocr_available?data.message:'La reconnaissance photo demande Tesseract. Vous pouvez rechercher le nom dans le catalogue ou écrire votre demande.';
+    const reply=data.ocr_available?data.message:'La reconnaissance photo demande Tesseract, qui n’est pas installé dans ce déploiement. Vous pouvez rechercher le nom dans le catalogue ou écrire votre demande.';
     const host=addBubble('assistant',reply,data.extracted_text?`Texte lu : ${data.extracted_text}`:'Résultat de la reconnaissance locale');
     if(data.candidates?.length){currentSlots={intent:'availability',language:'fr',quantity:null,city:null};setNeed(currentSlots);showCandidates(data.candidates,host);}
     else if(data.related_candidates?.length)showRelatedCandidates(data.related_candidates,host,data.related_preview||[]);
@@ -116,7 +131,7 @@ $('#enquiry-form').addEventListener('submit',async event=>{
   const button=$('#prepare-message');button.disabled=true;button.textContent='Préparation…';
   try{
     const data=await api('/api/pharmacy-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({catalog_id:selected.id,strength:selected.dosage,form:selected.forme,presentation:selected.presentation||'',requested_quantity:$('#quantity').value,location:$('#location').value,language:$('#message-language').value,question_type:$('#question-type').value})});
-    $('#generated-message').value=data.message;$('#message-result').classList.remove('hidden');$('#message-step').classList.add('done');$('#message-step').classList.remove('active');$('#step-state').textContent='Question prête';
+    $('#generated-message').value=data.message;$('#nearby-status').textContent='';$('#nearby-results').innerHTML='';$('#message-result').classList.remove('hidden');$('#message-step').classList.add('done');$('#message-step').classList.remove('active');$('#step-state').textContent='Question prête';
     $('#message-result').scrollIntoView({block:'nearest',behavior:'smooth'});
   }catch(error){addBubble('assistant',error.message,'La question n’a pas été générée.');}
   finally{button.disabled=false;button.innerHTML='Préparer ma question <span aria-hidden="true">→</span>';}
