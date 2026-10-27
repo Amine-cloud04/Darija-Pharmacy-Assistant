@@ -1,0 +1,21 @@
+{
+  "description": "Small, manually authored smoke/evaluation set based on pharmacy request examples. Examples are author-reviewed for expected labels but are not an independently sampled or externally validated dataset; results must not be read as population performance.",
+  "cases": [
+    {"text":"واش هاد الدوا كاين؟","intent":"availability_inquiry","language":"darija_ar","medication_name":null},
+    {"text":"Bghit n3ref taman dyal had dwa.","intent":"price_inquiry","language":"darija_latn","medication_name":null},
+    {"text":"3afak wach kayn Doliprane 1000 mg?","intent":"availability_inquiry","language":"darija_latn","medication_name":"DOLIPRANE"},
+    {"text":"Je cherche ce médicament en pharmacie.","intent":"medication_identification","language":"fr","medication_name":null},
+    {"text":"Fin n9der nl9a had médicament?","intent":"pharmacy_location_inquiry","language":"darija_latn","medication_name":null},
+    {"text":"Bghit n3ref wach kayn had dawa, 20 comprimés.","intent":"availability_inquiry","language":"darija_latn","medication_name":null},
+    {"text":"Quel est le prix de Doliprane ?","intent":"price_inquiry","language":"fr","medication_name":"DOLIPRANE"},
+    {"text":"شنو فيه دواء Doliprane؟","intent":"product_information","language":"darija_ar","medication_name":"DOLIPRANE"},
+    {"text":"Bghit Doliprane 1 g, 2 boites f Rabat","intent":"medication_identification","language":"darija_latn","medication_name":"DOLIPRANE"},
+    {"text":"Je veux savoir si vous avez Doliprane 1 g, boîte de 8.","intent":"availability_inquiry","language":"fr","medication_name":"DOLIPRANE"},
+    {"text":"عفاك واش عندكم DOLIPRANE 1 G؟","intent":"availability_inquiry","language":"darija_ar","medication_name":"DOLIPRANE"},
+    {"text":"Bghit n3ref taman dyal Efferalgan 500 mg","intent":"price_inquiry","language":"darija_latn","medication_name":"EFFERALGAN"},
+    {"text":"Est-ce que cette boîte contient du paracétamol ?","intent":"product_information","language":"fr","medication_name":null},
+    {"text":"عندي صداع، شنو ناخد؟","intent":"unsupported_medical_question","language":"darija_ar","medication_name":null},
+    {"text":"What dose should I take?","intent":"unsupported_medical_question","language":"unknown","medication_name":null},
+    {"text":"wach kayn ce médicament à Casablanca?","intent":"availability_inquiry","language":"darija_latn","medication_name":null}
+  ]
+}

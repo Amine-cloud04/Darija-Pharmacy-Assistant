@@ -1,0 +1,16 @@
+{
+  "dataset": "Medicine Boxes Annotated (test split)",
+  "dataset_author": "Malek Messaoudi; hosted mirror: gokuljegadeesan",
+  "dataset_url": "https://huggingface.co/datasets/gokuljegadeesan/Medicine_boxes_annotated",
+  "license": "MIT (as stated on the dataset card)",
+  "split": "test",
+  "sample": {
+    "filename": "1745236103.jpg",
+    "url": "https://huggingface.co/datasets/gokuljegadeesan/Medicine_boxes_annotated/resolve/main/test/images/1745236103.jpg",
+    "dataset_label": "Med-Box (generic box class)",
+    "manual_product_name": "DiaCURE",
+    "reference_visible_text": "ENFANTS CHILDREN DiaCURE",
+    "product_in_moroccan_catalogue": false,
+    "annotation_note": "The dataset labels only the generic medicine-box object; DiaCURE is a manual transcription of the prominent product name visible on this image. This is one foreign-market image, not a Moroccan product test set."
+  }
+}

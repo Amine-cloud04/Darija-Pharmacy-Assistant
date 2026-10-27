@@ -1,0 +1,600 @@
+{
+  "generated_at": "2026-10-27T14:58:13.706429+00:00",
+  "evaluation_set": {
+    "intent_cases": 16,
+    "provenance": "Small, manually authored smoke/evaluation set based on pharmacy request examples. Examples are author-reviewed for expected labels but are not an independently sampled or externally validated dataset; results must not be read as population performance.",
+    "images": 1,
+    "unique_image_products": 1
+  },
+  "catalogue": {
+    "source_rows": 9908,
+    "normalized_rows": 9908,
+    "unique_brands": 4070,
+    "duplicate_ids": 0,
+    "missing_values": {
+      "epi": 9908,
+      "statut": 1810,
+      "ppv": 1098,
+      "ph": 1098
+    }
+  },
+  "intent": {
+    "accuracy": 1.0,
+    "per_intent": {
+      "availability_inquiry": {
+        "correct": 6,
+        "total": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "medication_identification": {
+        "correct": 2,
+        "total": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "pharmacy_location_inquiry": {
+        "correct": 1,
+        "total": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "price_inquiry": {
+        "correct": 3,
+        "total": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "product_information": {
+        "correct": 2,
+        "total": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "unsupported_medical_question": {
+        "correct": 2,
+        "total": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "availability_inquiry": {
+        "availability_inquiry": 6,
+        "medication_identification": 0,
+        "pharmacy_location_inquiry": 0,
+        "price_inquiry": 0,
+        "product_information": 0,
+        "unsupported_medical_question": 0
+      },
+      "medication_identification": {
+        "availability_inquiry": 0,
+        "medication_identification": 2,
+        "pharmacy_location_inquiry": 0,
+        "price_inquiry": 0,
+        "product_information": 0,
+        "unsupported_medical_question": 0
+      },
+      "pharmacy_location_inquiry": {
+        "availability_inquiry": 0,
+        "medication_identification": 0,
+        "pharmacy_location_inquiry": 1,
+        "price_inquiry": 0,
+        "product_information": 0,
+        "unsupported_medical_question": 0
+      },
+      "price_inquiry": {
+        "availability_inquiry": 0,
+        "medication_identification": 0,
+        "pharmacy_location_inquiry": 0,
+        "price_inquiry": 3,
+        "product_information": 0,
+        "unsupported_medical_question": 0
+      },
+      "product_information": {
+        "availability_inquiry": 0,
+        "medication_identification": 0,
+        "pharmacy_location_inquiry": 0,
+        "price_inquiry": 0,
+        "product_information": 2,
+        "unsupported_medical_question": 0
+      },
+      "unsupported_medical_question": {
+        "availability_inquiry": 0,
+        "medication_identification": 0,
+        "pharmacy_location_inquiry": 0,
+        "price_inquiry": 0,
+        "product_information": 0,
+        "unsupported_medical_question": 2
+      }
+    }
+  },
+  "language": {
+    "accuracy": 1.0,
+    "per_language_accuracy": {
+      "darija_ar": {
+        "correct": 4,
+        "total": 4,
+        "accuracy": 1.0
+      },
+      "darija_latn": {
+        "correct": 7,
+        "total": 7,
+        "accuracy": 1.0
+      },
+      "fr": {
+        "correct": 4,
+        "total": 4,
+        "accuracy": 1.0
+      },
+      "unknown": {
+        "correct": 1,
+        "total": 1,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "medication_name_extraction": {
+    "expected_named_cases": 7,
+    "correct": 7,
+    "accuracy": 1.0
+  },
+  "clarification_decision": {
+    "correct": 16,
+    "total": 16,
+    "accuracy": 1.0
+  },
+  "catalogue_search_examples": [
+    {
+      "query": "Doliprane 1 G",
+      "kind": "brand and strength",
+      "expected": "1 G",
+      "top1": "DOLIPRANE",
+      "top1_dosage": "1 G",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "DOLIPRANE",
+          "dosage": "1 G",
+          "score": 0.99
+        },
+        {
+          "name": "DOLIPRANE",
+          "dosage": "1 G",
+          "score": 0.99
+        },
+        {
+          "name": "DOLIPRANE ADULTE",
+          "dosage": "1 G",
+          "score": 0.99
+        }
+      ]
+    },
+    {
+      "query": "doliprene",
+      "kind": "fuzzy spelling",
+      "expected": "DOLIPRANE",
+      "top1": "DOLIPRANE",
+      "top1_dosage": "1 G",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "DOLIPRANE",
+          "dosage": "1 G",
+          "score": 0.889
+        },
+        {
+          "name": "DOLIPRANE",
+          "dosage": "1 G",
+          "score": 0.889
+        },
+        {
+          "name": "DOLIPRANE",
+          "dosage": "100   MG",
+          "score": 0.889
+        }
+      ]
+    },
+    {
+      "query": "AMOXICILLINE",
+      "kind": "active substance",
+      "expected": "AMOXICILLINE",
+      "top1": "ALFAMOX",
+      "top1_dosage": "1 G",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "ALFAMOX",
+          "dosage": "1 G",
+          "score": 1.0
+        },
+        {
+          "name": "ALFAMOX",
+          "dosage": "1 G",
+          "score": 1.0
+        },
+        {
+          "name": "ALFAMOX",
+          "dosage": "1 G",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "PARACETAMOL",
+      "kind": "active substance",
+      "expected": "PARACETAMOL",
+      "top1": "ALGO",
+      "top1_dosage": "500   MG",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "ALGO",
+          "dosage": "500   MG",
+          "score": 1.0
+        },
+        {
+          "name": "AMIPAR",
+          "dosage": "10   MG  /   ML",
+          "score": 1.0
+        },
+        {
+          "name": "ANDOL",
+          "dosage": "0.03",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "Amlodipine",
+      "kind": "case-normalized substance",
+      "expected": "AMLODIPINE",
+      "top1": "AM-10",
+      "top1_dosage": "10   MG",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "AM-10",
+          "dosage": "10   MG",
+          "score": 1.0
+        },
+        {
+          "name": "AM-10",
+          "dosage": "10   MG",
+          "score": 1.0
+        },
+        {
+          "name": "AM-10",
+          "dosage": "10   MG",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "query": "DOLIPRANE 500 MG",
+      "kind": "strength disambiguation",
+      "expected": "500 MG",
+      "top1": "DOLIPRANE",
+      "top1_dosage": "500   MG",
+      "top1_correct": true,
+      "top3_hit": true,
+      "top3": [
+        {
+          "name": "DOLIPRANE",
+          "dosage": "500   MG",
+          "score": 0.99
+        },
+        {
+          "name": "DOLIPRANE",
+          "dosage": "500   MG",
+          "score": 0.99
+        },
+        {
+          "name": "DOLIPRANE",
+          "dosage": "500   MG",
+          "score": 0.99
+        }
+      ]
+    }
+  ],
+  "ambiguity": {
+    "query": "DOLIPRANE",
+    "returned_candidates": 17,
+    "different_dosage_values_in_top20": 7,
+    "example_dosages": [
+      "1 G",
+      "100   MG",
+      "150   MG",
+      "200   MG",
+      "300   MG",
+      "500   MG",
+      "500   MG  /  150   MG"
+    ],
+    "requires_user_confirmation": true
+  },
+  "strength_conflict_check": {
+    "query": "DOLIPRANE 500 MG",
+    "top3_dosages": [
+      "500   MG",
+      "500   MG",
+      "500   MG"
+    ],
+    "all_top3_strengths_agree": true
+  },
+  "ocr": {
+    "generated_at": "2026-10-27T02:40:07.029761+00:00",
+    "dataset": "Medicine Boxes Annotated (test split)",
+    "dataset_url": "https://huggingface.co/datasets/gokuljegadeesan/Medicine_boxes_annotated",
+    "license": "MIT (as stated on the dataset card)",
+    "images": 1,
+    "unique_products": 1,
+    "split": "test",
+    "sample": "1745236103.jpg",
+    "dataset_object_label": "Med-Box (generic box class)",
+    "manual_product_name": "DiaCURE",
+    "product_in_moroccan_catalogue": false,
+    "ocr_languages": [
+      "eng",
+      "fra",
+      "ara"
+    ],
+    "ocr_text": "ENFANTS\nCHILDREN\n©",
+    "reference_visible_text": "ENFANTS CHILDREN DiaCURE",
+    "character_error_rate_visible_text": 0.3181818181818182,
+    "product_name_read": false,
+    "catalogue_top1_correct": false,
+    "catalogue_top3_correct": false,
+    "candidate_count": 0,
+    "candidates": [],
+    "needs_confirmation": true,
+    "result": "OCR did not read the product name; no exact Moroccan catalogue match was found.",
+    "limitations": [
+      "One manually transcribed Indonesian product image only.",
+      "The dataset's supplied object label is generic and does not identify the product; the visible-name annotation is manual.",
+      "The sample product is absent from the included Moroccan catalogue, so this cannot measure Moroccan catalogue recall."
+    ]
+  },
+  "limitations": [
+    "Small manually authored language examples; not a representative or independent sample.",
+    "Intent rules are not a trained language model.",
+    "The one real-photo OCR example is foreign-market, manually name-labeled, and insufficient to estimate Moroccan product performance.",
+    "No speech recognition feature exists."
+  ],
+  "cases": [
+    {
+      "text": "واش هاد الدوا كاين؟",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_ar",
+      "predicted_language": "darija_ar",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "Bghit n3ref taman dyal had dwa.",
+      "expected_intent": "price_inquiry",
+      "predicted_intent": "price_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "3afak wach kayn Doliprane 1000 mg?",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "Je cherche ce médicament en pharmacie.",
+      "expected_intent": "medication_identification",
+      "predicted_intent": "medication_identification",
+      "intent_correct": true,
+      "expected_language": "fr",
+      "predicted_language": "fr",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "Fin n9der nl9a had médicament?",
+      "expected_intent": "pharmacy_location_inquiry",
+      "predicted_intent": "pharmacy_location_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "Bghit n3ref wach kayn had dawa, 20 comprimés.",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "Quel est le prix de Doliprane ?",
+      "expected_intent": "price_inquiry",
+      "predicted_intent": "price_inquiry",
+      "intent_correct": true,
+      "expected_language": "fr",
+      "predicted_language": "fr",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "شنو فيه دواء Doliprane؟",
+      "expected_intent": "product_information",
+      "predicted_intent": "product_information",
+      "intent_correct": true,
+      "expected_language": "darija_ar",
+      "predicted_language": "darija_ar",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "Bghit Doliprane 1 g, 2 boites f Rabat",
+      "expected_intent": "medication_identification",
+      "predicted_intent": "medication_identification",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "Je veux savoir si vous avez Doliprane 1 g, boîte de 8.",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "fr",
+      "predicted_language": "fr",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "عفاك واش عندكم DOLIPRANE 1 G؟",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_ar",
+      "predicted_language": "darija_ar",
+      "language_correct": true,
+      "name_expected": "DOLIPRANE",
+      "name_predicted": "DOLIPRANE",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "Bghit n3ref taman dyal Efferalgan 500 mg",
+      "expected_intent": "price_inquiry",
+      "predicted_intent": "price_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": "EFFERALGAN",
+      "name_predicted": "EFFERALGAN",
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "Est-ce que cette boîte contient du paracétamol ?",
+      "expected_intent": "product_information",
+      "predicted_intent": "product_information",
+      "intent_correct": true,
+      "expected_language": "fr",
+      "predicted_language": "fr",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    },
+    {
+      "text": "عندي صداع، شنو ناخد؟",
+      "expected_intent": "unsupported_medical_question",
+      "predicted_intent": "unsupported_medical_question",
+      "intent_correct": true,
+      "expected_language": "darija_ar",
+      "predicted_language": "darija_ar",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "What dose should I take?",
+      "expected_intent": "unsupported_medical_question",
+      "predicted_intent": "unsupported_medical_question",
+      "intent_correct": true,
+      "expected_language": "unknown",
+      "predicted_language": "unknown",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": false,
+      "clarification_predicted": false
+    },
+    {
+      "text": "wach kayn ce médicament à Casablanca?",
+      "expected_intent": "availability_inquiry",
+      "predicted_intent": "availability_inquiry",
+      "intent_correct": true,
+      "expected_language": "darija_latn",
+      "predicted_language": "darija_latn",
+      "language_correct": true,
+      "name_expected": null,
+      "name_predicted": null,
+      "name_correct": true,
+      "clarification_expected": true,
+      "clarification_predicted": true
+    }
+  ]
+}

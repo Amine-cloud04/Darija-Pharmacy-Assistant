@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-10-27T02:40:07.029761+00:00",
+  "dataset": "Medicine Boxes Annotated (test split)",
+  "dataset_url": "https://huggingface.co/datasets/gokuljegadeesan/Medicine_boxes_annotated",
+  "license": "MIT (as stated on the dataset card)",
+  "images": 1,
+  "unique_products": 1,
+  "split": "test",
+  "sample": "1745236103.jpg",
+  "dataset_object_label": "Med-Box (generic box class)",
+  "manual_product_name": "DiaCURE",
+  "product_in_moroccan_catalogue": false,
+  "ocr_languages": [
+    "eng",
+    "fra",
+    "ara"
+  ],
+  "ocr_text": "ENFANTS\nCHILDREN\n©",
+  "reference_visible_text": "ENFANTS CHILDREN DiaCURE",
+  "character_error_rate_visible_text": 0.3181818181818182,
+  "product_name_read": false,
+  "catalogue_top1_correct": false,
+  "catalogue_top3_correct": false,
+  "candidate_count": 0,
+  "candidates": [],
+  "needs_confirmation": true,
+  "result": "OCR did not read the product name; no exact Moroccan catalogue match was found.",
+  "limitations": [
+    "One manually transcribed Indonesian product image only.",
+    "The dataset's supplied object label is generic and does not identify the product; the visible-name annotation is manual.",
+    "The sample product is absent from the included Moroccan catalogue, so this cannot measure Moroccan catalogue recall."
+  ]
+}

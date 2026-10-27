@@ -1,9 +1,67 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pharma Darija</title><link rel="stylesheet" href="/styles.css"></head><body>
-<header><a class="brand" href="#">Pharma <b>Darija</b></a><span id="catalogue-status">Chargement du catalogue…</span></header>
-<main>
-  <section class="intro"><p class="eyebrow">Catalogue AMMPS · recherche locale</p><h1>Trouve un médicament.<br><em>Comprends ce qu’il contient.</em></h1><p>Un outil de consultation, pas un diagnostic. Vérifie toujours auprès d’un professionnel de santé.</p></section>
-  <section class="search-panel"><form id="search-form"><label>Rechercher par marque, substance active ou dosage<input id="query" autocomplete="off" placeholder="Ex. Doliprane, amoxicilline…"></label><div class="filters"><label>Forme<select id="form"><option value="">Toutes les formes</option><option>COMPRIME</option><option>SIROP</option><option>GELULE</option><option>SOLUTION</option><option>INJECTABLE</option></select></label><label>Statut<select id="status"><option value="">Tous</option><option>Commercialisé</option><option>Non commercialisé</option></select></label><button>Rechercher</button></div></form></section>
-  <section class="results"><div class="results-head"><strong id="count">Résultats</strong><button id="export" class="quiet">Télécharger CSV</button></div><div id="result-list" aria-live="polite"></div><div class="pagination"><button id="previous" class="quiet">← Précédent</button><span id="page-label"></span><button id="next" class="quiet">Suivant →</button></div></section>
-</main>
-<aside class="assistant"><div class="assistant-title"><span>●</span><div><b>Assistant pharmacie</b><small>IA avec outils catalogue · conversation</small></div></div><div id="chat" class="chat"><div class="bubble bot">Salam 👋 Je peux expliquer les informations du catalogue, comparer des fiches et garder le contexte de notre discussion. Je ne prescris pas de traitement.</div></div><form id="chat-form"><input id="chat-input" placeholder="Ex. Compare Doliprane et Efferalgan" maxlength="2000"><button aria-label="Envoyer">↑</button></form></aside>
-<dialog id="details"><button id="close-dialog" class="close">×</button><div id="detail-content"></div></dialog><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17322c">
+  <title>DawaLink — votre question à la pharmacie</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="DawaLink accueil">Dawa<span>Link</span><i>.ma</i></a>
+    <div class="top-meta"><span class="local-pill"><i></i> Traitement sur cet appareil</span><span id="model-status" class="model-status">Vérification du modèle…</span></div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div><p class="eyebrow">Votre assistant de demande en pharmacie</p><h1>Un médicament en tête.<br><em>Une question à poser.</em></h1>
+        <p>Expliquez ce que vous cherchez en darija, en arabe ou en français. On vous aide à identifier la bonne fiche et à préparer une question claire pour votre pharmacie.</p></div>
+      <aside class="hero-note"><span class="note-mark">✳</span><div><strong>Vous gardez la main</strong><p>DawaLink ne vérifie pas les stocks et n’envoie aucun message. Vous relisez et décidez.</p></div></aside>
+    </section>
+
+    <section class="workspace" aria-label="Préparer une demande en pharmacie">
+      <section class="conversation panel" aria-labelledby="conversation-title">
+        <div class="section-head"><div><p class="eyebrow">1 — Dites-nous ce qu’il vous faut</p><h2 id="conversation-title">On cherche ensemble</h2></div><div class="conversation-actions"><span class="language-hint">عربية · Darija · Français</span><button id="new-conversation" type="button" class="new-chat">＋ Nouvelle demande</button></div></div>
+        <div id="llm-setup" class="setup-banner hidden" role="status"></div>
+        <div id="chat-log" class="chat-log" aria-live="polite" aria-relevant="additions">
+          <article class="bubble assistant-bubble"><span class="bubble-avatar">D</span><div><p>Salam ! Vous voulez vérifier si un médicament est disponible, demander son prix, ou identifier une boîte ? Dites-moi avec vos mots. Vous pouvez aussi envoyer une photo.</p><small>Assistant local · informations du catalogue à confirmer</small></div></article>
+          <div class="quick-start" id="quick-start" aria-label="Exemples de demandes">
+            <button type="button" data-prompt="Je veux vérifier si un médicament est disponible."><span>↗</span> Vérifier la disponibilité</button>
+            <button type="button" data-prompt="Je voudrais connaître le prix d’un médicament."><span>◌</span> Demander un prix</button>
+            <button type="button" data-prompt="Je ne connais pas le nom du médicament, je veux identifier ma boîte."><span>▧</span> Identifier une boîte</button>
+          </div>
+        </div>
+        <form id="chat-form" class="composer">
+          <label class="sr-only" for="chat-input">Votre question</label>
+          <textarea id="chat-input" rows="2" maxlength="500" placeholder="Ex. 3afak wach kayn Doliprane 1g f Rabat ?" required></textarea>
+          <div class="composer-bottom"><div class="composer-tools"><label class="photo-button" for="medicine-image"><span aria-hidden="true">＋</span> Ajouter une photo</label><input id="medicine-image" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"><span class="privacy-hint">Photo traitée localement · max. 8 MB</span></div><button class="send-button" type="submit"><span>Envoyer</span><b aria-hidden="true">↑</b></button></div>
+        </form>
+        <div id="photo-result" class="photo-result hidden" aria-live="polite"></div>
+        <p class="model-footnote"><span>◉</span> Compréhension par Qwen, modèle open source exécuté localement avec Ollama. Vos questions ne partent pas vers un service cloud.</p>
+      </section>
+
+      <aside class="request-card panel" aria-labelledby="request-title">
+        <div class="section-head"><div><p class="eyebrow">2 — Vérifiez avant d’écrire</p><h2 id="request-title">Votre demande</h2></div><span id="step-state" class="step-state">À compléter</span></div>
+        <div class="request-steps"><div class="step active"><span>01</span><div><b>Votre besoin</b><small id="need-summary">En attente de votre message</small></div></div><div class="step" id="product-step"><span>02</span><div><b>Le bon produit</b><small id="product-summary">À confirmer dans le catalogue</small></div></div><div class="step" id="message-step"><span>03</span><div><b>Votre question</b><small>À relire et copier</small></div></div></div>
+        <div id="selected-product" class="selected-product empty-product"><span class="product-symbol">Rx</span><div><strong>Aucun produit confirmé</strong><p>Les correspondances apparaîtront dans la conversation. Choisissez la fiche qui ressemble à votre boîte.</p></div></div>
+        <form id="enquiry-form" class="enquiry-form">
+          <div class="form-grid"><div><label for="quantity">Combien vous en faut-il ?</label><input id="quantity" maxlength="60" placeholder="Ex. 1 boîte"></div><div><label for="location">Votre ville <span>(facultatif)</span></label><input id="location" maxlength="80" placeholder="Ex. Rabat"></div></div>
+          <label for="question-type">Que voulez-vous demander ?</label><select id="question-type"><option value="both">Disponibilité et prix</option><option value="availability">Disponibilité</option><option value="price">Prix</option></select>
+          <label for="message-language">Langue de la question</label><select id="message-language"><option value="fr">Français</option><option value="darija_latn">Darija (latin)</option><option value="darija_ar">الدارجة (العربية)</option></select>
+          <button id="prepare-message" type="submit" disabled>Préparer ma question <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="message-result" class="message-result hidden"><div class="message-result-head"><strong>À envoyer vous-même</strong><span>Message prêt</span></div><textarea id="generated-message" rows="4" aria-label="Question à envoyer à la pharmacie"></textarea><div class="message-actions"><button id="copy-message" type="button" class="copy-button">Copier le message</button><button id="edit-request" type="button" class="text-button">Modifier ma demande</button></div><p class="no-send">DawaLink ne contacte pas la pharmacie et ne connaît pas son stock actuel.</p></div>
+      </aside>
+    </section>
+
+    <section class="catalogue-section">
+      <details><summary><span><b>Parcourir le catalogue</b><small>Vous connaissez déjà le nom du médicament ? Cherchez directement parmi 9 908 fiches.</small></span><span class="summary-arrow">＋</span></summary>
+        <div class="catalogue-tools"><div class="catalogue-search"><label class="sr-only" for="catalogue-query">Nom du médicament</label><input id="catalogue-query" autocomplete="off" placeholder="Marque, substance active, dosage"><button id="search-catalogue" type="button">Rechercher</button></div><span id="catalogue-count">Catalogue local</span></div><div id="catalogue-results" class="catalogue-results"></div><div class="pagination"><button id="previous" type="button" disabled>← Précédent</button><button id="next" type="button" disabled>Suivant →</button></div>
+      </details>
+    </section>
+  </main>
+  <footer><span>DawaLink · Fiches du catalogue fournies sans garantie de disponibilité en pharmacie</span><a href="/api/health" target="_blank" rel="noreferrer">État des services locaux</a></footer>
+  <script src="/app.js"></script>
+</body>
+</html>

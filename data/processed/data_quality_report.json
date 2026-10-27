@@ -1,0 +1,32 @@
+{
+  "source_file": "moroccan_medications.csv",
+  "source": "repository:moroccan_medications.csv (AMMPS web export; original import date not recorded)",
+  "source_record_date": null,
+  "imported_at": "2026-10-27T14:17:56.006734+00:00",
+  "encoding": "utf-8-sig",
+  "source_rows": 9908,
+  "usable_rows": 9908,
+  "duplicate_ids_removed": 0,
+  "duplicate_ids_in_source": 0,
+  "unique_brand_values": 4070,
+  "missing_values": {
+    "id": 0,
+    "specialite": 0,
+    "substance_active": 0,
+    "dosage": 0,
+    "forme": 0,
+    "presentation": 0,
+    "epi": 9908,
+    "statut": 1810,
+    "ppv": 1098,
+    "ph": 1098
+  },
+  "fts5_enabled": true,
+  "limitations": [
+    "Source export date was not retained in the repository.",
+    "EPI is blank for all current rows.",
+    "Blank fields are preserved; no values are inferred."
+  ],
+  "records": 9908,
+  "reused_database": true
+}

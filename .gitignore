@@ -3,3 +3,9 @@ __pycache__/
 *.py[cod]
 pharmacy.db
 .env
+.local/
+*.deb
+.~lock.*#
+*.tmp
+.pytest_cache/
+.ruff_cache/
